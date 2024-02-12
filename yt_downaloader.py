@@ -3,38 +3,66 @@
 #########################################################################################################
 
 from pytube import YouTube
+import streamlit as st
 
-def download_video(url):
-    yt = YouTube(url)
-    video = yt.streams.get_highest_resolution
+def check_url():
+    if st.session_state.url == "":
+        return
     try:
-        video.download(videos)
-        print(f"Video {yt.title} downloaded successfully")    
+        url = st.session_state.url
+        yt = YouTube(url)
+    
     except:
-        print("An error occurred")  
-
-
-def download_audio(url):
-    yt = YouTube(url)
-    audio = yt.streams.get_audio_only()
-    try:
-        audio.download(audios)
-        print(f"Audio {yt.title} downloaded successfully")
-    except: 
-        print("An error occurred")
-
-
-def main():
-    url = input("Enter the video URL: ")
-    path = input("Enter the path to save the file: ")
-    print("1. Download video\n2. Download audio")
-    option = int(input("Enter the option: "))
-    if option == 1:
-        download_video(url, path)
-    elif option == 2:
-        download_audio(url, path)
+        st.error("Invalid URL")
+        return
+    
+    check = yt.check_availability()
+    if check == False:
+        st.error("The Video download is not available")
     else:
-        print("Invalid option")
+        show_video_info(yt)
 
-if __name__ == "__main__":
-    main()
+def show_video_info(yt):
+    tbmImg = st.image(yt.thumbnail_url)
+    tumbTitle = st.subheader(yt.title)
+
+def download_video():
+    url = st.session_state.url
+    yt = YouTube(url)
+    video = yt.streams.get_highest_resolution()
+    video.download()
+    st.success("Video downloaded successfully")
+
+def download_audio():
+    url = st.session_state.url
+    yt = YouTube(url)
+    audio = yt.streams.get_audio_only() 
+    audio.download()
+    st.success("Audio downloaded successfully")
+
+st.set_page_config(
+    page_title="Youtube Downloader", 
+    page_icon="🎵", 
+    layout="centered", 
+    # initial_sidebar_state="expanded"
+    )
+
+
+st.title("Youtube Downloader" )
+st.subheader("Download videos and audios from Youtube in best quality")
+st.text("Version 1.0 Developed by Joao Pedro")
+
+
+st.text_input("URL:", key="url" , placeholder="Paste the Video URL and press 'Enter'" , on_change=check_url)
+
+if st.button("Download Video"):
+    download_video()
+
+if st.button("Download Audio"):
+    download_audio()
+
+
+st.divider()
+st.text("Fortaleza, Brazil 2024/02/12")
+
+
